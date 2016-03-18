@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="@drawable/background" >
+
+    <EditText
+        android:id="@+id/editTextDate"
+        android:hint="Select Date"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:textSize="25sp"
+        android:inputType="none"
+        android:focusable="false" />
+
+    <TextView
+        android:gravity="center"
+        android:text="Select Branch"
+        android:id="@+id/textViewBranchName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="25sp"
+        android:layout_margin="15dp"/>
+
+    <ListView
+        android:id="@+id/listViewBranch"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:listSelector="@drawable/list_selector"
+        android:dividerHeight="2dp">
+
+    </ListView>
+
+
+</LinearLayout>

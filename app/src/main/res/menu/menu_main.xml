@@ -1,0 +1,64 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:HTMLCode="http://schemas.android.com/apk/res-auto">
+       <item android:id="@+id/action_filterby"
+         android:title="@string/action_filterby"
+         android:orderInCategory="100">
+         <menu>
+             <item android:title="Category"
+                 android:id="@+id/action_submenu_category" />
+             <item android:title="Sub-Category"
+                 android:id="@+id/action_submenu_subcateg" />
+             <item android:title="Brand"
+                 android:id="@+id/action_submenu_brand" />
+             <item android:title="Division"
+                 android:id="@+id/action_submenu_division" />
+             <item android:title="With SO"
+                 android:id="@+id/action_submenu_withso" />
+             <item android:title="Without SO"
+                 android:id="@+id/action_submenu_woso" />
+             <item android:title="Show All"
+                 android:id="@+id/action_submenu_all" />
+         </menu>
+     </item>
+
+    <item android:id="@+id/action_save_current"
+        android:title="@string/action_save_current"
+        android:orderInCategory="100"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_post"
+        android:title="@string/action_post"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/action_report"
+        android:title="View Reports"
+        android:orderInCategory="100" >
+        <menu>
+            <item android:title="Items Summary Report"
+                android:id="@+id/action_detail_summary" />
+            <item android:title="Per Category Report"
+                android:id="@+id/action_category_report" />
+            <item android:title="Per Subcategory Report"
+                android:id="@+id/action_subcate_report" />
+            <item android:title="Per Brand Report"
+                android:id="@+id/action_brand_report" />
+            <item android:title="Per Division Report"
+                android:id="@+id/action_division_report" />
+            <item android:title="With SO"
+                android:id="@+id/action_withso_report" />
+        </menu>
+    </item>
+    <item android:id="@+id/action_print"
+        android:title="@string/action_print"
+        android:orderInCategory="100">
+        <menu>
+            <item android:title="With SO"
+                android:id="@+id/action_print_withso" />
+            <item android:title="All"
+                android:id="@+id/action_print_all" />
+        </menu>
+    </item>
+    <item android:id="@+id/action_logout"
+        android:title="@string/action_logout"
+        android:orderInCategory="100" />
+</menu>

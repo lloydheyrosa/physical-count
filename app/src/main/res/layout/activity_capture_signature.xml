@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+
+    <com.simplify.ink.InkView
+        android:id="@+id/inkSignature"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="7"
+        android:background="@color/white"
+        />
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="0dp"
+       android:layout_weight="1"
+       android:padding="5dp">
+
+       <Button
+           android:id="@+id/btnClear"
+           android:layout_width="0dp"
+           android:layout_height="wrap_content"
+           android:layout_weight="1"
+           android:text="Clear"
+           android:background="@drawable/cancel_btn_bg"/>
+
+       <Button
+           android:id="@+id/btnSubmitSign"
+           android:layout_width="0dp"
+           android:layout_height="wrap_content"
+           android:layout_weight="1"
+           android:text="Okay"
+           android:background="@drawable/login_btn_bg"/>
+
+   </LinearLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayoutPCount"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/list_selector"
+    android:padding="5dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="2.5"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/se_row_sku"
+            android:layout_gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:text="0000000001"
+            android:textColor="@color/black"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/se_row_desc"
+            android:layout_gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sample Barcode"
+            android:textColor="@color/black"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/se_row_ig_goal"
+        android:layout_width="0dp"
+        android:layout_weight="1.5"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/def_qty"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/se_row_sa_qty"
+        android:layout_width="0dp"
+        android:layout_weight="1.5"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/def_qty"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/se_row_whpc_qty"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/def_qty"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/se_row_whcs_qty"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/def_qty"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/se_row_so_qty"
+        android:layout_width="0dp"
+        android:layout_weight="1.5"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/se_row_finso_qty"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/se_row_sku_conv"
+        android:layout_width="2dp"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:layout_marginStart="5dp"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:visibility="gone"
+        />
+
+</LinearLayout>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textViewDesc"
+            android:text="DESCRIPTION"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:background="#333333"
+            android:layout_width="match_parent"
+            android:padding="10dp"
+            android:layout_height="45dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="SAPC"
+                android:textSize="15dp"
+                android:gravity="center"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="WHPC"
+                android:textSize="15dp"
+                android:gravity="center"
+                android:textColor="@color/black"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="WHCS"
+                android:textSize="15dp"
+                android:gravity="center"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp">
+
+            <EditText
+                android:id="@+id/pcs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/textSecondary"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/whpcs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/textSecondary"
+                android:inputType="number"/>
+
+            <EditText
+                android:id="@+id/whcs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/textSecondary"
+                android:inputType="number"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnQtyOk"
+            android:layout_width="100dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:text="OK"
+            android:textSize="18dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/login_btn_bg"/>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true" >
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp">
+
+        <EditText
+            android:id="@+id/enter_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_search"
+            android:drawableLeft="@drawable/ic_action_search" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="@drawable/assort_header_bg"
+        android:layout_gravity="right">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2.5"
+            android:text="Items"
+            android:textSize="11dp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@color/textPrimary"
+            android:padding="2dp"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="Inventory Goal"
+            android:textSize="10dp"
+            android:textColor="@color/textPrimary"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="1dp"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="Selling Area"
+            android:textSize="11dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:text="Warehouse"
+            android:textSize="11dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="Suggested Order"
+            android:textSize="10dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Final SO"
+            android:textSize="11dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:background="@drawable/background" >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2.5"
+            android:text="SKU"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="PC"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="PC"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="PC"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="CS"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5"
+            android:text="PC"
+            android:textSize="15dp"
+            android:textStyle="bold"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/lblfso"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:textStyle="bold"
+            android:singleLine="false"
+            android:textColor="@color/textPrimary"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="1dp">
+
+        <ListView
+            android:id="@+id/lvwAssortment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:dividerHeight="3dp"
+            android:background="@android:color/white"
+            android:listSelector="@drawable/list_selector" />
+
+        <!--<ScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
+
+        <!--<TableLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:showDividers="middle"-->
+        <!--android:orientation="vertical"-->
+        <!--android:gravity="center"-->
+        <!--android:clickable="true"-->
+        <!--android:id="@+id/tableLayout">-->
+
+        <!--</TableLayout>-->
+
+        <!--</ScrollView>-->
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

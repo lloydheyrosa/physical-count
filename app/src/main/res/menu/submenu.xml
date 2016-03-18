@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="Category"
+        android:id="@+id/submenu_category" />
+    <item android:title="Sub-Category"
+        android:id="@+id/submenu_subcateg" />
+    <item android:title="Brand"
+        android:id="@+id/submenu_brand" />
+    <item android:title="Division"
+        android:id="@+id/submenu_division" />
+    <item android:title="Show All"
+        android:id="@+id/submenu_all" />
+</menu>

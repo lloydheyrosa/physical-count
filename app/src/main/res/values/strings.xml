@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">AHEAD Mobile PCount</string>
+    <string name="action_settings">Settings</string>
+    <string name="enter_username">USERNAME</string>
+    <string name="enter_password">PASSWORD</string>
+    <string name="enter_button">Login</string>
+    <string name="ahead_pcount">AHEAD MOBILE PCOUNT</string>
+    <string name="pcount">PCount</string>
+    <string name="report">Report</string>
+    <string name="settings">Settings</string>
+    <string name="enter_search"> Search SKU</string>
+    <string name="def_qty">QUANTITY</string>
+    <string name="action_filterby">Filter By</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_post">Post Transaction</string>
+    <string name="action_switch">Switch Branch</string>
+    <string name="action_save_current">Save Current Work</string>
+    <string name="action_print">Print</string>
+</resources>

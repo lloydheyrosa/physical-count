@@ -12,7 +12,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME  = "UPcDb";
     private static final String TAG = "SettingsProvider";
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 13;
 
     //Pcount MainTable
     public static final String TABLE_PCOUNT = "pcount";
@@ -34,6 +34,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PCOUNT_FSOVALUE = "fsovalue";
     public static final String COLUMN_PCOUNT_WEBID = "webid";
     public static final String COLUMN_PCOUNT_MULTI = "multi";
+    public static final String COLUMN_PCOUNT_OTHERBARCODE = "otherbarcode"; // new column v2.4
 
     public static final String DATABASE_CREATE_TABLE_PCOUNT = "CREATE TABLE " + TABLE_PCOUNT + "("
             + COLUMN_PCOUNT_ID + " integer PRIMARY KEY, "
@@ -53,20 +54,29 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_PCOUNT_STOREID + " integer, "
             + COLUMN_PCOUNT_FSOVALUE + " real, "
             + COLUMN_PCOUNT_WEBID + " text, "
-            + COLUMN_PCOUNT_MULTI + " integer )";
+            + COLUMN_PCOUNT_MULTI + " integer, "
+            + COLUMN_PCOUNT_OTHERBARCODE + " text)";
 
     //Branch Table
     public static final String TABLE_BRANCH = "branch";
     public static final String COLUMN_BRANCH_ID = "id";
     public static final String COLUMN_BRANCH_BID = "bid";
+    public static final String COLUMN_BRANCH_storecode = "storecode"; // new column v.2.6
     public static final String COLUMN_BRANCH_DESC = "bdesc";
     public static final String COLUMN_BRANCH_MULTIPLE = "multiple";
+    public static final String COLUMN_BRANCH_CHANNELID = "channelid"; // new column v.2.6
+    public static final String COLUMN_BRANCH_CHANNELDESC = "channeldesc"; // new column v.2.6
+    public static final String COLUMN_BRANCH_CHANNELAREA = "area"; // new column v.2.6
 
     public static final String DATABASE_CREATE_TABLE_BRANCH = "CREATE TABLE " + TABLE_BRANCH + "("
             + COLUMN_BRANCH_ID + " integer PRIMARY KEY, "
             + COLUMN_BRANCH_BID + " integer, "
+            + COLUMN_BRANCH_storecode + " text, "
             + COLUMN_BRANCH_DESC + " text, "
-            + COLUMN_BRANCH_MULTIPLE + " integer)";
+            + COLUMN_BRANCH_MULTIPLE + " integer, "
+            + COLUMN_BRANCH_CHANNELID + " integer, "
+            + COLUMN_BRANCH_CHANNELDESC + " text, "
+            + COLUMN_BRANCH_CHANNELAREA + " text)";
 
     //User Table
     public static final String TABLE_USER = "user";
@@ -118,7 +128,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_TRANSACTION_USERID + " integer, "
             + COLUMN_TRANSACTION_MULTI + " integer )";
 
-
     //ASSORTMENT MASTERFILE
     public static final String TABLE_ASSORTMENT = "tblAssortment";
     public static final String COLUMN_ASSORTMENT_ID = "id";
@@ -139,6 +148,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ASSORTMENT_FSOVALUE = "fsovalue";
     public static final String COLUMN_ASSORTMENT_WEBID = "webid";
     public static final String COLUMN_ASSORTMENT_MULTI = "multi";
+    public static final String COLUMN_ASSORTMENT_OTHERBARCODE = "otherbarcode"; // new column v2.4
 
     public static final String DATABASE_CREATE_TABLE_ASSORTMENT = "CREATE TABLE " + TABLE_ASSORTMENT + "("
             + COLUMN_ASSORTMENT_ID + " integer PRIMARY KEY, "
@@ -158,7 +168,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
             + COLUMN_ASSORTMENT_STOREID + " integer, "
             + COLUMN_ASSORTMENT_FSOVALUE + " real, "
             + COLUMN_ASSORTMENT_WEBID + " text, "
-            + COLUMN_ASSORTMENT_MULTI + " integer )";
+            + COLUMN_ASSORTMENT_MULTI + " integer, "
+            + COLUMN_ASSORTMENT_OTHERBARCODE + " text)";
 
     //ASSORTMENT TRANSACTIONS
     public static final String TABLE_TRANSACTION_ASSORT = "tblAssortTransaction";
@@ -231,27 +242,13 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int currentVersion) {
- /*       db.execSQL("DROP TABLE IF EXISTS " + TABLE_PCOUNT);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BRANCH);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTION);*/
-        //onCreate(db);
-/*        if (oldVersion == 5 && currentVersion == 6){
-            db.execSQL("CREATE INDEX transactionBarcodeIndex ON TRANS (barcode)");
-        }*/
+
         if(currentVersion > oldVersion) {
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_ASSORTMENT);
-
-            db.execSQL(DATABASE_CREATE_TABLE_ASSORTMENT);
-            db.execSQL("CREATE INDEX assortDescIndex ON " + TABLE_ASSORTMENT + " (desc)");
-            db.execSQL("CREATE INDEX assortCategoryIndex ON " + TABLE_ASSORTMENT + " (categoryid)");
-            db.execSQL("CREATE INDEX assortBrandIndex ON " + TABLE_ASSORTMENT + " (brandid)");
-            db.execSQL("CREATE INDEX assortDivisionIndex ON " + TABLE_ASSORTMENT + " (divisionid)");
-            db.execSQL("CREATE INDEX assortSubCategoryIndex ON " + TABLE_ASSORTMENT + " (subcategoryid)");
-
-            db.execSQL(DATABASE_CREATE_TABLE_TRANSASSORT);
-            db.execSQL("CREATE INDEX assorttransactionIndex ON " + TABLE_TRANSACTION_ASSORT + " (date,storeid)");
-            db.execSQL("CREATE INDEX assorttransactionBarcodeIndex ON " + TABLE_TRANSACTION_ASSORT + " (barcode)");
+            // db version 13
+            db.execSQL("ALTER TABLE " + TABLE_BRANCH + " ADD COLUMN " + COLUMN_BRANCH_CHANNELDESC + " TEXT");
+            db.execSQL("ALTER TABLE " + TABLE_BRANCH + " ADD COLUMN " + COLUMN_BRANCH_CHANNELAREA + " TEXT");
+            db.execSQL("ALTER TABLE " + TABLE_BRANCH + " ADD COLUMN " + COLUMN_BRANCH_storecode + " TEXT");
+            db.execSQL("ALTER TABLE " + TABLE_BRANCH + " ADD COLUMN " + COLUMN_BRANCH_CHANNELID + " INTEGER");
         }
 
         Log.w(TAG, "Upgrading settings database from version " + oldVersion + " to "
@@ -260,12 +257,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-  /*      db.execSQL("DROP TABLE IF EXISTS " + TABLE_PCOUNT);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BRANCH);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTION);
-*/
-       // onCreate(db);
     }
 
 }

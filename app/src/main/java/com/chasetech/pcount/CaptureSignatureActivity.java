@@ -102,7 +102,7 @@ public class CaptureSignatureActivity extends AppCompatActivity{
 /*        getActionBar().setHomeButtonEnabled(true);
         getActionBar().setDisplayHomeAsUpEnabled(false);*/
 
-        getSupportActionBar().setTitle(MainLibrary.gCurrentBranchNameSelected + " - SIGN CAPTURE");
+        getSupportActionBar().setTitle(MainLibrary.gSelectedLocation.locationName + " - SIGN CAPTURE");
 
         currentBranchSelected = getIntent().getExtras().getInt("location");
         currentDateSelected = getIntent().getExtras().getString("datepick");
@@ -116,11 +116,11 @@ public class CaptureSignatureActivity extends AppCompatActivity{
         Cursor dbSum = null;
         if(MainLibrary.isAssortmentMode) {
             dbSum = db.queryData("select * from " + SQLiteHelper.TABLE_TRANSACTION_ASSORT + " where storeid = "
-                    + String.valueOf(MainLibrary.gCurrentBranchSelected) + " and date = '" + MainLibrary.gStrCurrentDate + "'");
+                    + String.valueOf(MainLibrary.gSelectedLocation.locationCode) + " and date = '" + MainLibrary.gStrCurrentDate + "'");
         }
         else {
             dbSum = db.queryData("select * from " + SQLiteHelper.TABLE_TRANSACTION + " where storeid = "
-                    + String.valueOf(MainLibrary.gCurrentBranchSelected) + " and date = '" + MainLibrary.gStrCurrentDate + "'");
+                    + String.valueOf(MainLibrary.gSelectedLocation.locationCode) + " and date = '" + MainLibrary.gStrCurrentDate + "'");
         }
         dbSum.moveToFirst();
 
@@ -469,11 +469,11 @@ public class CaptureSignatureActivity extends AppCompatActivity{
                 s = "Posting Successful";
                 Toast.makeText(CaptureSignatureActivity.this, s, Toast.LENGTH_SHORT).show();
                 if(MainLibrary.isAssortmentMode) {
-                    db.UpdateRecord(SQLiteHelper.TABLE_TRANSACTION_ASSORT, "date = ? and storeid = ? and userid = ?", new String[]{MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gCurrentBranchSelected), String.valueOf(MainLibrary.gStrCurrentUserID)},
+                    db.UpdateRecord(SQLiteHelper.TABLE_TRANSACTION_ASSORT, "date = ? and storeid = ? and userid = ?", new String[]{MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gSelectedLocation.locationCode), String.valueOf(MainLibrary.gStrCurrentUserID)},
                             new String[]{"lposted"}, new String[]{"1"});
                 }
                 else {
-                    db.UpdateRecord(SQLiteHelper.TABLE_TRANSACTION, "date = ? and storeid = ? and userid = ?", new String[]{MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gCurrentBranchSelected), String.valueOf(MainLibrary.gStrCurrentUserID)},
+                    db.UpdateRecord(SQLiteHelper.TABLE_TRANSACTION, "date = ? and storeid = ? and userid = ?", new String[]{MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gSelectedLocation.locationCode), String.valueOf(MainLibrary.gStrCurrentUserID)},
                             new String[]{"lposted"}, new String[]{"1"});
                 }
 

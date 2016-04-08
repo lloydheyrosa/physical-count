@@ -1,7 +1,6 @@
 package com.chasetech.pcount.adapter;
 
 import android.content.Context;
-import android.support.v4.content.res.ResourcesCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chasetech.pcount.R;
-import com.chasetech.pcount.library.PCount;
+import com.chasetech.pcount.MKL.PCount;
 import com.chasetech.pcount.viewholder.PCountViewHolder;
 
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class PCountListViewAdapter extends BaseAdapter {
         holder.tvFso.setText(String.valueOf(pCount.fso));
 
         holder.linearLayoutPCount.setBackground(mContext.getResources().getDrawable(R.drawable.list_selector));
-        if (pCount.sapc != 0 || pCount.whpc != 0 || pCount.whcs != 0 || pCount.fso != 0) {
+        if (pCount.sapc != 0 || pCount.whpc != 0 || pCount.whcs != 0 || pCount.fso != 0 || pCount.updated) {
             holder.linearLayoutPCount.setBackgroundColor(mContext.getResources().getColor(R.color.blue_gray));
         }
 

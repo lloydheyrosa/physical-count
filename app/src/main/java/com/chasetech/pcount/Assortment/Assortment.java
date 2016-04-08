@@ -4,6 +4,7 @@ package com.chasetech.pcount.Assortment;
  * Created by ULTRABOOK on 2/29/2016.
  */
 public class Assortment {
+    public final int id;
     public final String barcode;
     public final String desc;
     public final String category;
@@ -21,9 +22,11 @@ public class Assortment {
     public final double fsovalue;
     public final int webid;
     public boolean updated;
+    public String itembarcode;
 
-    public Assortment(String barcode, String desc, String category, String brand, String division, String subcate, int ig, int conversion, double fsovalue, int webid, int multi, boolean update)
+    public Assortment(int assortID, String barcode, String desc, String category, String brand, String division, String subcate, int ig, int conversion, double fsovalue, int webid, int multi, boolean update, String otherbarc)
     {
+        this.id = assortID;
         this.barcode = barcode;
         this.desc = desc;
         this.category = category;
@@ -41,5 +44,6 @@ public class Assortment {
         this.webid = webid;
         this.multi = multi;
         this.updated = update;
+        this.itembarcode = otherbarc;
     }
 }

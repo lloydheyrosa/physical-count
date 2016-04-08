@@ -3,7 +3,7 @@
     package="com.chasetech.pcount">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PCountActivity"
+            android:name=".MKL.PCountActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -48,7 +48,7 @@
         </activity>
         <activity
             android:name=".GPSActivity"
-            android:parentActivityName=".PCountActivity"
+            android:parentActivityName=".MKL.PCountActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -71,8 +71,10 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DateLocPickerActivity" />
-
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

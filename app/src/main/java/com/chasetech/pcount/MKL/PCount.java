@@ -1,10 +1,11 @@
-package com.chasetech.pcount.library;
+package com.chasetech.pcount.MKL;
 
 /**
  * Created by Inid on 10/25/2015.
  */
 public class PCount {
 
+    public final int id;
     public final String barcode;
     public final String desc;
     public final String category;
@@ -21,9 +22,12 @@ public class PCount {
     public int multi;
     public final double fsovalue;
     public final int webid;
+    public final String itembarcode;
+    public boolean updated;
 
-    public PCount(String barcode, String desc, String category, String brand, String division, String subcate, int ig, int conversion, double fsovalue, int webid, int multi)
+    public PCount(int pcountid, String barcode, String desc, String category, String brand, String division, String subcate, int ig, int conversion, double fsovalue, int webid, int multi, String otherbarc, boolean isupdated)
     {
+        this.id = pcountid;
         this.barcode = barcode;
         this.desc = desc;
         this.category = category;
@@ -40,6 +44,8 @@ public class PCount {
         this.fsovalue = fsovalue;
         this.webid = webid;
         this.multi = multi;
+        this.itembarcode = otherbarc;
+        this.updated = isupdated;
     }
 
 }

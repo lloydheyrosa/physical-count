@@ -2,18 +2,34 @@ package com.chasetech.pcount.library;
 
 import android.app.Application;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.DatePicker;
+import android.widget.Toast;
 
+import com.chasetech.pcount.MainActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -52,9 +68,7 @@ public class MainLibrary extends Application {
 
     public static Boolean gLUpdate = true;
 
-    public static int gCurrentBranchSelected;
-
-    public static String gCurrentBranchNameSelected;
+    public static Location gSelectedLocation;
 
     public static String gStrCurrentDate = "";
 
@@ -63,8 +77,18 @@ public class MainLibrary extends Application {
     public static int gStrCurrentUserID;
 
     public static String gStrCurrentUserName = "";
+    public static String gStrDeviceId = "";
 
     public static boolean isAssortmentMode = false;
+
+    public static SharedPreferences sprefUsers;
+
+    public enum PRINTER {
+        TSC,
+        WOOSIM
+    }
+
+    public static PRINTER mSelectedPrinter = PRINTER.TSC;
 
     private static final String[] PRN_FILES = new String[] {
             "DEFAULT.PRN",
@@ -77,7 +101,7 @@ public class MainLibrary extends Application {
     };
 
     public static final String[] aModules = new String[] {
-            "NORMAL",
+            "SO",
             "ASSORTMENT"
     };
 
@@ -120,6 +144,14 @@ public class MainLibrary extends Application {
         return bReturn;
     }
 
+    public static String GetBarcodeType(String barcode) {
+        String barcodeType = "128";
+        if(barcode.length() == 13) barcodeType = "EAN13";
+        if(barcode.length() == 8) barcodeType = "EAN8";
+
+        return barcodeType;
+    }
+
     public void ShowCalendar() {
 
         // Process to get Current Date
@@ -144,6 +176,13 @@ public class MainLibrary extends Application {
                 }, mYear, mMonth, mDay);
         dpd.show();
 
+    }
+
+    public static boolean CheckBluetooth() {
+        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+        if (!bt.isEnabled()) return false;
+
+        return true;
     }
 
 }

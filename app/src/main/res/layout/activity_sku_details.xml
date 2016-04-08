@@ -6,7 +6,7 @@
     android:background="@color/white">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
@@ -19,7 +19,7 @@
             android:background="#333333"
             android:layout_width="match_parent"
             android:padding="10dp"
-            android:layout_height="45dp" />
+            android:layout_height="match_parent" />
 
         <LinearLayout
             android:layout_width="match_parent"

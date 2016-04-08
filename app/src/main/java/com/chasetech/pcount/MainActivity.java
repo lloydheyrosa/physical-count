@@ -5,12 +5,14 @@ package com.chasetech.pcount;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,11 +23,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.chasetech.pcount.Woosim.WoosimPrinter;
 import com.chasetech.pcount.autoupdate.AutoUpdateApk;
 import com.chasetech.pcount.database.SQLLib;
 import com.chasetech.pcount.database.SQLiteHelper;
@@ -38,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -45,8 +44,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     String username = "";
     String urlDownload;
     String urlGet;
+    String urlLogout;
     String urlConnect;
     String urlDownloadperFile;
 
@@ -82,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     File dlPath;
     File appFolder;
 
+    boolean isNew = false;
+
     ArrayList<String> arrPrnFiles;
 
     @Override
@@ -91,12 +91,15 @@ public class MainActivity extends AppCompatActivity {
 
         AutoUpdateApk autoupdate = new AutoUpdateApk(this);
 
+        MainLibrary.gStrDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);;
+
         PackageManager pm = this.getPackageManager();
         String packageName = this.getPackageName();
         int flags = PackageManager.GET_PERMISSIONS;
         PackageInfo pmInfo = null;
         String versionName = "";
         arrPrnFiles = new ArrayList<>();
+        isNew = true;
 
         try {
             pmInfo = pm.getPackageInfo(packageName, flags);
@@ -109,45 +112,9 @@ public class MainActivity extends AppCompatActivity {
 
         MainLibrary.LoadFolders();
 
+
         Button btnSend = (Button) findViewById(R.id.btnSend);
         btnSend.setVisibility(View.GONE);
-/*        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File sdcard = Environment.getExternalStorageDirectory();
-                File prnFolder = new File(sdcard,"prnfiles");
-                File prnFile = new File(prnFolder,"unilever.bmp");
-
-                boolean success = false;
-                if(bPrinter.Open()) {
-                    bPrinter.sendfile("DEFAULT.BAS");
-                    success = true;
-                }
-
-                android.support.v7.app.AlertDialog printdialog = new android.support.v7.app.AlertDialog.Builder(MainActivity.this).create();
-                printdialog.setTitle("Print");
-                printdialog.setMessage("Sent to Printer.");
-                printdialog.setButton(android.support.v7.app.AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        bPrinter.Close();
-                    }
-                });
-                printdialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        bPrinter.Close();
-                    }
-                });
-
-                if(success) printdialog.show();
-
-*//*                String stringResult = new BPrinter(MainActivity.this).ConvertPRNToString(prnFile.getPath());
-                if(bPrinter.OpenBluetoothPrinter()) {
-                    bPrinter.PrintString(stringResult);
-                }*//*
-            }
-        });*/
 
         HomeWatcher mHomeWatcher = new HomeWatcher(this);
         mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
@@ -167,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         urlConnect = MainLibrary.API_URL;
         urlGet =  urlConnect + "/api/auth?";
+        urlLogout =  urlConnect + "/api/logout?";
         urlDownload = urlConnect + "/api/download?";
 
         appFolder = new File(getExternalFilesDir(null),""); //getExternalFilesDir(null)
@@ -196,10 +164,19 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 wlStayAwake.acquire();
-                new AsyncGetUser().execute();
+                new AsyncGetUser(false).execute();
             }
         });
 
+        MainLibrary.sprefUsers = getSharedPreferences(getString(R.string.pcount_sharedprefKey), Context.MODE_PRIVATE);
+
+        boolean isLoggedIn = MainLibrary.sprefUsers.getBoolean(getString(R.string.logged_pref_key), false);
+
+        if(isLoggedIn) {
+            Intent intent = new Intent(MainActivity.this, DateLocPickerActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override
@@ -209,6 +186,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class AsyncGetUser extends AsyncTask<Void, Void, String> {
+
+        private boolean isLoggedOut = false;
+
+        public AsyncGetUser(boolean logout)
+        {
+            this.isLoggedOut = logout;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -220,11 +204,14 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(Void... params) {
             try{
 
-                String urlfinal = urlGet + "email=" + username + "&pwd=" + password;
+                String urlfinal = urlGet + "email=" + username + "&pwd=" + password + "&device_id=" + MainLibrary.gStrDeviceId;
+                if(isLoggedOut)
+                    urlfinal = urlLogout + "email=" + username + "&pwd=" + password + "&device_id=" + MainLibrary.gStrDeviceId;
+
                 URL url = new URL(urlfinal);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.connect();
-                try{
+                try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                     StringBuilder stringBuilder = new StringBuilder();
                     String line;
@@ -261,7 +248,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String response) {
             super.onPostExecute(response);
 
-
             if(response == null) {
                 response = "THERE WAS AN ERROR";
             }
@@ -277,8 +263,15 @@ public class MainActivity extends AppCompatActivity {
                 int uid = Integer.parseInt(usercode);
                 db.insertToUser(uid, name, hash);
                 urlDownload = urlDownload + "id=" + usercode;
+                urlDownload = urlDownload + "id=" + usercode;
                 MainLibrary.gStrCurrentUserID = Integer.parseInt(usercode);
                 MainLibrary.gStrCurrentUserName = name;
+
+                SharedPreferences.Editor spEditor = MainLibrary.sprefUsers.edit();
+                spEditor.putBoolean(getString(R.string.logged_pref_key), true);
+                spEditor.putInt(getString(R.string.pref_userid), Integer.parseInt(usercode));
+                spEditor.putString(getString(R.string.pref_username), name);
+                spEditor.commit();
 
                 if (MainLibrary.gLUpdate) {
 
@@ -294,9 +287,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Intent intent = new Intent(MainActivity.this, DateLocPickerActivity.class);
                     startActivity(intent);
-
                 }
-
             }
             catch (JSONException ex) {
                 ex.printStackTrace();
@@ -540,6 +531,10 @@ public class MainActivity extends AppCompatActivity {
             catch(IOException e) {
                 e.printStackTrace();
                 Log.e("IOException", e.getMessage());
+            }
+            catch (NullPointerException nex) {
+                nex.printStackTrace();
+                Log.e("NullPointerException", nex.getMessage());
             }
 
             return null;

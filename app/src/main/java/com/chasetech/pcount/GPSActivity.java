@@ -36,7 +36,7 @@ public class GPSActivity extends AppCompatActivity implements LocationListener {
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         // Define the criteria how to select the locatioin provider -> use
-        // default
+        // ic_default
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         provider = locationManager.getBestProvider(criteria, true);

@@ -1,4 +1,4 @@
-package com.chasetech.pcount.library;
+package com.chasetech.pcount.TSC;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,21 +36,20 @@ public class BPrinter extends TSCActivity {
 
     private Context mContext;
 
-    public static String printerName = "BT-SPP";
+    public static String selectedPrinter = "BT-SPP";
 
     File ejDir;
 
     public static BluetoothAdapter mBluetoothAdapter;
-    private BluetoothSocket mBluetoothSocket;
-    private BluetoothDevice mBluetoothDevice;
 
-    private OutputStream oStream;
     private InputStream iStream;
     private Thread workerThread;
 
     public static String MAC_ADDRESS = "";
     public String tsclines2 = "_______________________________________________________\n";
+    public String woosimLines2 = "___________________________________________";
     public String tsclines = "------------------------------------------------------------------------------------------------------------------\n";
+    public String woosimLines = "----------------------------------------------------------------";
 
     public int startRow = 100 ;//86;
 
@@ -62,10 +63,10 @@ public class BPrinter extends TSCActivity {
         mContext = ctx;
     }
 
-    public String GenerateStringTSCPrint(String strBody, int len, int numPrint) {
+    public String GenerateStringTSCPrint(String strBody, double totalLength, int numOfItems, int numPrint) {
 
-        double lengthmm = 5;
-        double totlength = 0;
+        //double lengthmm = 5;
+        //double totlength = 0;
 
         String totalbody = "";
 
@@ -76,7 +77,7 @@ public class BPrinter extends TSCActivity {
         String body = "";
 
         int totrow = startRow;
-        totlength = strBodyperNewline.length * lengthmm; //strBodyperNewline.length
+        //totlength = strBodyperNewline.length * lengthmm; //strBodyperNewline.length
 
         // FOR LOGO
 /*        printerCommands += "SIZE 4,1\n";
@@ -88,29 +89,40 @@ public class BPrinter extends TSCActivity {
 /*        printerCommands += "RUN \"" + basfile + "\"\n";
         printerCommands += "PRINT 1\n\n";*/
 
+        DecimalFormat df = new DecimalFormat("0.00");
+        String formate = df.format(totalLength);
+        double finalLength = totalLength;
+        try{
+            finalLength = (Double)df.parse(formate);
+            if(numOfItems == 45) {
+                finalLength -= 3;
+            }
+            else if (numOfItems > 60) {
+                finalLength -= 4;
+            }
+            else if (numOfItems > 75) {
+                finalLength -= 5;
+            }
+            else if (numOfItems > 90) {
+                finalLength -= 6;
+            }
+            else if (numOfItems > 100) {
+                finalLength -= 7;
+            }
+        }
+        catch (ParseException pex) { Log.e("ParseException", pex.getMessage()); }
+
         printerCommands += "BACKFEED 230\n\n";
-        printerCommands += "SIZE 72 mm," + totlength + " mm\n";
+        printerCommands += "SIZE 2.8," + String.valueOf(finalLength) + "\n";
         printerCommands += "DIRECTION 0,0\n";
-        printerCommands += "REFERENCE 0,0\n";
-        printerCommands += "DENSITY 10\n";
         printerCommands += "SPEED 4\n";
-        printerCommands += "SET PEEL ON\n";
-        printerCommands += "SET CUTTER 1\n";
-        printerCommands += "SET PARTIAL_CUTTER 1\n";
-        printerCommands += "SET TEAR OFF\n";
-        printerCommands += "CLS\n";
         printerCommands += "CODEPAGE 1252\n";
-/*
-        printerCommands += "PUTBMP 0," + totrow + "\" " + bmpfile + "\",8,80\n";
-        printerCommands += "PUTBMP 20," + totrow + "\" " + bmpfile + "\",8,80\n";
-*/
 
         for (String strPrint : strBodyperNewline) {
-            totlength += lengthmm;
             // GET BARCODE STYLE
             if(strPrint.contains("BARCODE")) {
                 String[] barSplit = strPrint.split(";");
-                String barcodeString = barSplit[0] + "0," + totrow + "," + barSplit[1];
+                String barcodeString = barSplit[0] + "20," + totrow + "," + barSplit[1];
                 body += barcodeString + "\n";
             }
             else {
@@ -140,7 +152,6 @@ public class BPrinter extends TSCActivity {
         }
 
         printerPrintCommand += "PRINT " + numPrint + ",1\n";
-        printerPrintCommand += "CUT";
 
         totalbody = printerCommands + body + printerPrintCommand;
 
@@ -187,8 +198,7 @@ public class BPrinter extends TSCActivity {
             if (pairedDevices.size() > 0) {
                 for (BluetoothDevice device : pairedDevices) {
 
-                    if (device.getName().equals(printerName)) { // NAME OF PAIRED BLUETOOTH PRINTER
-                        mBluetoothDevice = device;
+                    if (device.getName().equals(selectedPrinter)) { // NAME OF PAIRED BLUETOOTH PRINTER
                         MAC_ADDRESS = device.getAddress();
                         res = true;
                         break;
@@ -206,10 +216,6 @@ public class BPrinter extends TSCActivity {
         }
 
         return res;
-    }
-
-    public void ClearBuffer() {
-
     }
 
     @Override

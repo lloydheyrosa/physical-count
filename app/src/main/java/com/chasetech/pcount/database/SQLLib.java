@@ -88,6 +88,9 @@ public class SQLLib {
 
                 String[] itemRefs = line.split(",");
 
+                String itembarcode = "";
+                if(itemRefs.length == 13) itembarcode = itemRefs[12].trim();
+
                 id++;
 
                 statement.clearBindings();
@@ -109,6 +112,7 @@ public class SQLLib {
                 statement.bindDouble(16, Double.parseDouble(itemRefs[4]));
                 statement.bindDouble(17,Integer.parseInt(itemRefs[10]));
                 statement.bindDouble(18,Integer.parseInt(itemRefs[11]));
+                statement.bindString(19, itembarcode);
                 statement.execute();
             }
 
@@ -153,13 +157,18 @@ public class SQLLib {
 
     }
 
-    public void insertToBranch(int uid, String desc){
+    public void insertToBranch(int uid, String storecode, String desc, int channelid, String channel, String area){
 
         DBASE = dbHelper.getWritableDatabase();
 
         ContentValues insertValues = new ContentValues();
         insertValues.put(dbHelper.COLUMN_BRANCH_BID, uid);
+        insertValues.put(dbHelper.COLUMN_BRANCH_storecode, storecode);
         insertValues.put(dbHelper.COLUMN_BRANCH_DESC, desc);
+        insertValues.put(dbHelper.COLUMN_BRANCH_CHANNELID, channelid);
+        insertValues.put(dbHelper.COLUMN_BRANCH_CHANNELDESC, channel);
+        insertValues.put(dbHelper.COLUMN_BRANCH_CHANNELAREA, area);
+
         DBASE.insert(SQLiteHelper.TABLE_BRANCH,null,insertValues);
 
     }

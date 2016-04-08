@@ -1,5 +1,9 @@
 package com.chasetech.pcount.Assortment;
 
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -11,7 +15,6 @@ import android.os.Environment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -29,25 +32,29 @@ import android.widget.Toast;
 
 import com.chasetech.pcount.BuildConfig;
 import com.chasetech.pcount.CaptureSignatureActivity;
+import com.chasetech.pcount.MKL.PCount;
 import com.chasetech.pcount.MainActivity;
 import com.chasetech.pcount.R;
-import com.chasetech.pcount.adapter.PCountListViewAdapter;
+import com.chasetech.pcount.Woosim.WoosimPrinter;
 import com.chasetech.pcount.adapter.ReportListViewAdapter;
 import com.chasetech.pcount.database.SQLLib;
 import com.chasetech.pcount.database.SQLiteHelper;
-import com.chasetech.pcount.library.BPrinter;
-import com.chasetech.pcount.library.HomeWatcher;
+import com.chasetech.pcount.TSC.BPrinter;
 import com.chasetech.pcount.library.MainLibrary;
-import com.chasetech.pcount.library.PCount;
 import com.chasetech.pcount.library.ReportClass;
-import com.chasetech.pcount.viewholder.PCountViewHolder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -77,26 +84,24 @@ public class AssortmentActivity extends AppCompatActivity {
     private Boolean lprintall = false;
     private Boolean lprintwithso = false;
 
-    public int len  = 0;
+    public double len  = 0;
+    public int numItems = 0;
+
+    String selectedPrinter = "";
+    WoosimPrinter woosimPrinter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.assortment_activity);
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        selectedPrinter = prefs.getString("printer_list", "2");
 
-        HomeWatcher mHomeWatcher = new HomeWatcher(this);
-        mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
-            @Override
-            public void onHomePressed() {
-                NavUtils.navigateUpFromSameTask(AssortmentActivity.this);
-            }
-
-            @Override
-            public void onHomeLongPressed() {
-            }
-        });
-        mHomeWatcher.startWatch();
+        if(selectedPrinter.equals("1")) {
+            MainLibrary.mSelectedPrinter = MainLibrary.PRINTER.WOOSIM;
+        }
+        else MainLibrary.mSelectedPrinter = MainLibrary.PRINTER.TSC;
 
         final TextView lblfso = (TextView) findViewById(R.id.lblfso);
         String fsolbl = MainLibrary.gStrCurrentUserName.substring(3,6) + " Unit";
@@ -113,7 +118,7 @@ public class AssortmentActivity extends AppCompatActivity {
         if(MainLibrary.isAssortmentMode) getActionBar().setTitle(MainLibrary.gCurrentBranchNameSelected + " - " + " ASSORTMENT");*/
 //        lupdate = getIntent().getExtras().getBoolean("lupdate");
 
-        getSupportActionBar().setTitle(MainLibrary.gCurrentBranchNameSelected + " - ASSORTMENT");
+        getSupportActionBar().setTitle(MainLibrary.gSelectedLocation.locationName + " - ASSORTMENT");
 
         new TaskProcessData().execute();
 
@@ -193,8 +198,7 @@ public class AssortmentActivity extends AppCompatActivity {
                             inputWhcs = "0";
                         }
 
-                        int so = assortment.ig - Integer.parseInt(inputPcs)
-                                - Integer.parseInt(inputWhPcs) - (Integer.parseInt(inputWhcs) * assortment.conversion);
+                        int so = assortment.ig - Integer.parseInt(inputPcs) - Integer.parseInt(inputWhPcs) - (Integer.parseInt(inputWhcs) * assortment.conversion);;
 
                         int fso = 0;
 
@@ -217,6 +221,18 @@ public class AssortmentActivity extends AppCompatActivity {
                         assortment.fso = fso;
                         assortment.updated = true;
 
+                        for (Assortment assortmentall : arrAssortmentAll) {
+                            if(assortmentall.id == assortment.id) {
+                                assortmentall.sapc = Integer.parseInt(inputPcs);
+                                assortmentall.whpc = Integer.parseInt(inputWhPcs);
+                                assortmentall.whcs = Integer.parseInt(inputWhcs);
+                                assortmentall.so = so;
+                                assortmentall.fso = fso;
+                                assortmentall.updated = true;
+                                break;
+                            }
+                        }
+
                         mAssortmentAdapter.notifyDataSetChanged();
 
                         new TaskSaveData().execute();
@@ -226,6 +242,20 @@ public class AssortmentActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(MainLibrary.mSelectedPrinter == MainLibrary.PRINTER.WOOSIM)
+            woosimPrinter = new WoosimPrinter(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(MainLibrary.mSelectedPrinter == MainLibrary.PRINTER.WOOSIM)
+            woosimPrinter.Close();
     }
 
     /** DATA PROCESSING *************************************************************/
@@ -245,7 +275,7 @@ public class AssortmentActivity extends AppCompatActivity {
 
                         BufferedReader br = new BufferedReader(new FileReader(fTextFile));
 
-                        String rQuery = db.getStringBulkInsert(17, SQLiteHelper.TABLE_ASSORTMENT);
+                        String rQuery = db.getStringBulkInsert(18, SQLiteHelper.TABLE_ASSORTMENT);
                         db.insertBulktoPcount(rQuery, br);
 
                         mReupdatePCount = false;
@@ -255,10 +285,12 @@ public class AssortmentActivity extends AppCompatActivity {
                 arrAssortment.clear();
 
                 // SELECTING ASSORTMENT MASTERFILE
-                Cursor cursAssort = db.GetDataCursor(SQLiteHelper.TABLE_ASSORTMENT, SQLiteHelper.COLUMN_ASSORTMENT_STOREID + " = '" + String.valueOf(MainLibrary.gCurrentBranchSelected) + "'");
+                //Cursor cursAssort = db.GetDataCursor(SQLiteHelper.TABLE_ASSORTMENT, SQLiteHelper.COLUMN_ASSORTMENT_STOREID + " = '" + String.valueOf(MainLibrary.gCurrentBranchSelected) + "'");
+                Cursor cursAssort = db.queryData("SELECT * FROM " + SQLiteHelper.TABLE_ASSORTMENT + " WHERE storeid = " + String.valueOf(MainLibrary.gSelectedLocation.locationCode));
                 cursAssort.moveToFirst();
                 if(cursAssort.getCount() > 0) {
                     while (!cursAssort.isAfterLast()) {
+                        int id = cursAssort.getInt(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_ID));
                         String barcode = cursAssort.getString(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_BARCODE)).trim();
                         String desc = cursAssort.getString(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_DESC)).trim();
                         String categoryid = cursAssort.getString(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_CATEGORYID)).trim();
@@ -270,15 +302,44 @@ public class AssortmentActivity extends AppCompatActivity {
                         double fsovalue = cursAssort.getDouble(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_FSOVALUE));
                         int webid = cursAssort.getInt(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_WEBID));
                         int multi = cursAssort.getInt(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_MULTI));
+                        String otherbar = cursAssort.getString(cursAssort.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_OTHERBARCODE));
 
-                        arrAssortment.add(new Assortment(barcode, desc, categoryid, brandid, divisionid, subcategoryid, ig, conversion, fsovalue, webid, multi, false));
+                        arrAssortment.add(new Assortment(id, barcode, desc, categoryid, brandid, divisionid, subcategoryid, ig, conversion, fsovalue, webid, multi, false, otherbar));
                         cursAssort.moveToNext();
                     }
                 }
                 cursAssort.close();
 
                 arrAssortmentAll.clear();
-                arrAssortmentAll.addAll(arrAssortment);
+
+
+                // ORDERED ASSORTMENT ITEMS
+                String query = "SELECT * FROM " + SQLiteHelper.TABLE_ASSORTMENT + " WHERE storeid = " + String.valueOf(MainLibrary.gSelectedLocation.locationCode);
+                if(MainLibrary.gSelectedLocation.channelArea.equals("MDC"))
+                    query = "SELECT * FROM " + SQLiteHelper.TABLE_ASSORTMENT + " WHERE storeid = " + String.valueOf(MainLibrary.gSelectedLocation.locationCode) + " ORDER BY " + SQLiteHelper.COLUMN_ASSORTMENT_BARCODE;
+                Cursor cursOrdered = db.queryData(query);
+                cursOrdered.moveToFirst();
+                if(cursOrdered.getCount() > 0) {
+                    while (!cursOrdered.isAfterLast()) {
+                        int id = cursOrdered.getInt(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_ID));
+                        String barcode = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_BARCODE)).trim();
+                        String desc = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_DESC)).trim();
+                        String categoryid = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_CATEGORYID)).trim();
+                        String brandid = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_BRANDID)).trim();
+                        String divisionid = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_DIVISIONID)).trim();
+                        String subcategoryid = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_SUBCATEGORYID)).trim();
+                        int ig = cursOrdered.getInt(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_IG));
+                        int conversion = cursOrdered.getInt(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_CONVERSION));
+                        double fsovalue = cursOrdered.getDouble(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_FSOVALUE));
+                        int webid = cursOrdered.getInt(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_WEBID));
+                        int multi = cursOrdered.getInt(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_MULTI));
+                        String otherbar = cursOrdered.getString(cursOrdered.getColumnIndex(SQLiteHelper.COLUMN_ASSORTMENT_OTHERBARCODE));
+
+                        arrAssortmentAll.add(new Assortment(id, barcode, desc, categoryid, brandid, divisionid, subcategoryid, ig, conversion, fsovalue, webid, multi, false, otherbar));
+                        cursOrdered.moveToNext();
+                    }
+                }
+                cursOrdered.close();
 
             }
             catch (IOException e) {
@@ -294,7 +355,7 @@ public class AssortmentActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             pDL.dismiss();
 
-            Cursor cursor = db.queryData("select * from " + SQLiteHelper.TABLE_TRANSACTION_ASSORT + " where storeid = " + String.valueOf(MainLibrary.gCurrentBranchSelected) + " and date = '" + MainLibrary.gStrCurrentDate +
+            Cursor cursor = db.queryData("select * from " + SQLiteHelper.TABLE_TRANSACTION_ASSORT + " where storeid = " + String.valueOf(MainLibrary.gSelectedLocation.locationCode) + " and date = '" + MainLibrary.gStrCurrentDate +
                     "' and [userid] = " + MainLibrary.gStrCurrentUserID);
 
             cursor.moveToFirst();
@@ -320,6 +381,23 @@ public class AssortmentActivity extends AppCompatActivity {
                         break;
                     }
                 }
+
+                for (Assortment assortmentAll : arrAssortmentAll) {
+                    if (assortmentAll.barcode.contains(barcode)) {
+
+                        assortmentAll.ig = cursor.getInt(cursor.getColumnIndex("ig"));
+                        assortmentAll.conversion = cursor.getInt(cursor.getColumnIndex("conversion"));
+                        assortmentAll.sapc = cursor.getInt(cursor.getColumnIndex("sapc"));
+                        assortmentAll.whpc = cursor.getInt(cursor.getColumnIndex("whpc"));
+                        assortmentAll.whcs = cursor.getInt(cursor.getColumnIndex("whcs"));
+                        assortmentAll.so = cursor.getInt(cursor.getColumnIndex("so"));
+                        assortmentAll.fso = cursor.getInt(cursor.getColumnIndex("fso"));
+                        assortmentAll.multi = cursor.getInt(cursor.getColumnIndex("multi"));
+                        assortmentAll.updated = true;
+                        break;
+                    }
+                }
+
                 cursor.moveToNext();
             }
 
@@ -370,7 +448,7 @@ public class AssortmentActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(String... params) {
 
-            db.DeleteRecord(SQLiteHelper.TABLE_TRANSACTION_ASSORT,"date = ? and storeid = ? and userid = ?", new String[] { MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gCurrentBranchSelected), String.valueOf(MainLibrary.gStrCurrentUserID) });
+            db.DeleteRecord(SQLiteHelper.TABLE_TRANSACTION_ASSORT,"date = ? and storeid = ? and userid = ?", new String[] { MainLibrary.gStrCurrentDate, String.valueOf(MainLibrary.gSelectedLocation.locationCode), String.valueOf(MainLibrary.gStrCurrentUserID) });
 
             for (Assortment assortment : arrAssortmentAll) {
 
@@ -396,7 +474,7 @@ public class AssortmentActivity extends AppCompatActivity {
                     };
 
                     String[] avalues = { MainLibrary.gStrCurrentDate
-                            , String.valueOf(MainLibrary.gCurrentBranchSelected)
+                            , String.valueOf(MainLibrary.gSelectedLocation.locationCode)
                             , assortment.barcode
                             , String.valueOf(assortment.ig)
                             , String.valueOf(assortment.sapc)
@@ -432,78 +510,123 @@ public class AssortmentActivity extends AppCompatActivity {
     }
 
     /** DATA PROCESSING *************************************************************/
-    public class TaskPrintData extends AsyncTask<String, Void, Void> {
+    public class TaskPrintData extends AsyncTask<String, Void, Boolean> {
 
         String print = "";
-        Boolean lsuccess = false;
-        @Override
-        protected Void doInBackground(String... params) {
+        Boolean lwithbarcode = true;
+        String errmsg = "";
 
-            print = Printer.GenerateStringTSCPrint(PrintFormat(), len, 1);
-
-            if(Printer.Open()) {
-
-                String basfile = "DEFAULT.PRN";
-                switch (MainLibrary.eStore) {
-                    case SEVEN_ELEVEN:
-                        basfile = "711.PRN";
-                        break;
-                    case MERCURY_DRUG:
-                        basfile = "MERCURY.PRN";
-                        break;
-                    case MINISTOP:
-                        basfile = "MINISTOP.PRN";
-                        break;
-                    case FAMILY_MART:
-                        basfile = "FAMILY.PRN";
-                        break;
-                    case LAWSON:
-                        basfile = "LAWSON.PRN";
-                        break;
-                    case ALFAMART:
-                        basfile = "ALFAMART.PRN";
-                        break;
-                    default:
-                        break;
-                };
-
-                Printer.sendcommand("SIZE 4,1\n");
-                Printer.sendcommand("GAP 0,0\n");
-                Printer.sendcommand("DIRECTION 1\n");
-                Printer.sendcommand("SET TEAR ON\n");
-                Printer.sendcommand("CLS\n");
-
-                Printer.sendfile(basfile);
-                Printer.clearbuffer();
-
-                Printer.PrintString(print);
-                lsuccess = true;
-            }
-
-            return null;
+        public TaskPrintData(boolean hasBarcode) {
+            this.lwithbarcode = hasBarcode;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected Boolean doInBackground(String... params) {
+
+            Boolean lsuccess = false;
+
+            switch (MainLibrary.mSelectedPrinter) {
+                case WOOSIM:
+                    if(PrintFormatByWoosim(lwithbarcode)) {
+                        lsuccess = true;
+                    }
+                    break;
+                case TSC:
+                    print = Printer.GenerateStringTSCPrint(PrintFormat(lwithbarcode), len, numItems, 1);
+
+                    if(Printer.Open()) {
+
+                        String basfile = "DEFAULT.PRN";
+                        switch (MainLibrary.eStore) {
+                            case SEVEN_ELEVEN:
+                                basfile = "711.PRN";
+                                break;
+                            case MERCURY_DRUG:
+                                basfile = "MERCURY.PRN";
+                                break;
+                            case MINISTOP:
+                                basfile = "MINISTOP.PRN";
+                                break;
+                            case FAMILY_MART:
+                                basfile = "FAMILY.PRN";
+                                break;
+                            case LAWSON:
+                                basfile = "LAWSON.PRN";
+                                break;
+                            case ALFAMART:
+                                basfile = "ALFAMART.PRN";
+                                break;
+                            default:
+                                break;
+                        };
+
+                        try {
+
+                            Printer.sendcommand("SIZE 4,1\n");
+                            Printer.sendcommand("GAP 0,0\n");
+                            Printer.sendcommand("DIRECTION 1\n");
+                            Printer.sendcommand("SET TEAR ON\n");
+                            Printer.sendcommand("CLS\n");
+
+                            Printer.sendfile(basfile);
+
+                            Printer.clearbuffer();
+                            Printer.PrintString(print);
+                            lsuccess = true;
+                        }
+                        catch (Exception ex) {
+                            errmsg = ex.getMessage();
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return lsuccess;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
             pDL.dismiss();
 
-            if (lsuccess) {
+            if (result) {
 
                 AlertDialog printdialog = new AlertDialog.Builder(AssortmentActivity.this).create();
                 printdialog.setTitle("Print");
-                printdialog.setMessage("Sent to Printer.");
-                printdialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
+                printdialog.setMessage("Print successful.");
+
+                DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Printer.Close();
                     }
-                });
-                printdialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                };
+
+                DialogInterface.OnCancelListener cancelListerner = new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         Printer.Close();
                     }
-                });
+                };
+
+                if(MainLibrary.mSelectedPrinter == MainLibrary.PRINTER.WOOSIM) {
+                    okListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    };
+                    cancelListerner = new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            dialog.dismiss();
+                        }
+                    };
+                }
+
+                printdialog.setButton(DialogInterface.BUTTON_NEUTRAL, "OK", okListener);
+                printdialog.setOnCancelListener(cancelListerner);
 
                 printdialog.show();
 
@@ -517,6 +640,151 @@ public class AssortmentActivity extends AppCompatActivity {
         protected void onPreExecute() {
             pDL = ProgressDialog.show(AssortmentActivity.this, "", "Printing. Please Wait...", true);
         }
+    }
+
+    private boolean PrintFormatByWoosim(boolean hasBarcode) {
+        boolean result = false;
+        String toPrint = "";
+
+        // PRINT LOGO ------------------------------
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        Bitmap bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_default, options);
+
+        switch (MainLibrary.eStore) {
+            case SEVEN_ELEVEN:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_seveneleven, options);
+                break;
+            case MERCURY_DRUG:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_mercurydrug, options);
+                break;
+            case MINISTOP:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_ministop, options);
+                break;
+            case FAMILY_MART:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_familymart, options);
+                break;
+            case LAWSON:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_lawson, options);
+                break;
+            case ALFAMART:
+                bmpStore = BitmapFactory.decodeResource(getResources(), R.drawable.ic_alfamart, options);
+                break;
+            default:
+                break;
+        };
+
+        if(!woosimPrinter.printBMPImage(bmpStore, 0, 0, 580, 180)) {
+            return result;
+        }
+        // -------------------------------
+
+        toPrint += "Store: " + MainLibrary.gSelectedLocation.locationName + "\n";
+
+        int nSkuWithStocks = 0;
+        int nTotSku = 0;
+        double nOsaScore;
+        String osascore = "";
+        for (Assortment assortment : arrAssortmentAll) {
+            nTotSku++;
+            if(assortment.sapc != 0 || assortment.whpc != 0 || assortment.whcs != 0) {
+                nSkuWithStocks++;
+            }
+        }
+        nOsaScore = (Double.valueOf(nSkuWithStocks) / Double.valueOf(nTotSku)) * 100;
+        osascore = String.format("%.2f", nOsaScore) + " %";
+
+        toPrint += "Date: " + MainLibrary.gStrCurrentDate +"\n";
+        toPrint += StringUtils.rightPad("SKU",25,"") +
+                StringUtils.rightPad("IG",10,"") +
+                StringUtils.rightPad("Invty",8,"") +
+                StringUtils.rightPad("Order qty", 12,"") +
+                StringUtils.rightPad("Order amt", 5, "") + "\n";
+        toPrint += Printer.woosimLines;
+
+        try {
+            if(!woosimPrinter.printText(toPrint, false, false, 1))  return result;
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            Log.e(TAG, ex.getMessage());
+        }
+
+        result = PrintDetailsByWoosim(hasBarcode);
+
+        return result;
+    }
+
+    private boolean PrintDetailsByWoosim(boolean hasBarcode) {
+
+        boolean result = false;
+        int totsku = 0, totfso = 0;
+        double totfsoval = 0;
+        try {
+
+            for (Assortment assortment : arrAssortmentAll) {
+
+                if (lprintwithso) {
+                    if (assortment.so == 0) {
+                        continue;
+                    }
+                }
+
+                int lenig = 13 - String.valueOf(assortment.ig).length();
+
+                int totig = assortment.sapc + assortment.whpc + (assortment.whcs * assortment.conversion);
+
+                int lenei = 11 - String.valueOf(totig).length();
+                int lenfso = 12 - String.valueOf(assortment.fso).length(); // 18
+                int lenfsoval = 3 - String.valueOf(assortment.fsovalue * assortment.fso).length(); // 18
+
+                String itemDesc = StringUtils.rightPad(assortment.desc + " " + assortment.barcode, 20, "");
+                if(!woosimPrinter.printText(itemDesc, false, false, 1)) return result;
+
+                String strValues = StringUtils.rightPad("", 25, "")
+                        + StringUtils.rightPad(String.valueOf(assortment.ig), lenig)
+                        + StringUtils.rightPad(String.valueOf(totig), lenei)
+                        + StringUtils.rightPad(String.valueOf(assortment.fso), lenfso, "")
+                        + StringUtils.rightPad(MainLibrary.priceDec.format(assortment.fsovalue * assortment.fso), lenfsoval, "");
+
+                if(!woosimPrinter.printText(strValues, true, false, 1)) return result;
+
+                if(hasBarcode) {
+                    String barcodeType = MainLibrary.GetBarcodeType(assortment.itembarcode);
+                    woosimPrinter.print1DBarcode(barcodeType, assortment.itembarcode);
+                }
+
+                if(!woosimPrinter.printText(" ", false, false, 1)) return result;
+
+                if (assortment.so > 0) {
+                    totsku = totsku + 1;
+                }
+
+                totfso = totfso + assortment.fso;
+                totfsoval = totfsoval + (assortment.fsovalue * assortment.fso) ;
+            }
+
+            // FOOTER
+            String footer = "";
+
+            footer += Printer.woosimLines;
+            footer += "Total: " + StringUtils.rightPad(String.valueOf(totsku),40/*76*/) + StringUtils.rightPad(String.valueOf(totfso),9)
+                    + String.format("%.2f", totfsoval) + "\n";
+            footer += "\n" + "\n" + "\n" + "\n" + "\n";
+            footer += StringUtils.center(Printer.woosimLines2, 64);
+            footer += StringUtils.center("Acknowledged by", 64);
+            footer += "\n" + "\n"+ "\n";
+
+            if(!woosimPrinter.printText(footer, true, false, 1)) return result;
+
+            result = true;
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            Log.e(TAG, ex.getMessage());
+        }
+
+        return result;
     }
 
     @Override
@@ -547,9 +815,13 @@ public class AssortmentActivity extends AppCompatActivity {
                 });
                 logoutdialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(AssortmentActivity.this, MainActivity.class);
-                        startActivity(intent);
+
+                        SharedPreferences.Editor spEditor = MainLibrary.sprefUsers.edit();
+                        spEditor.putBoolean(getString(R.string.logged_pref_key), false);
+                        spEditor.commit();
+
                         dialog.dismiss();
+                        new UserLogout().execute();
                     }
                 });
 
@@ -620,13 +892,37 @@ public class AssortmentActivity extends AppCompatActivity {
             case R.id.action_save_current:
                 new TaskSaveData().execute();
                 break;
-            case R.id.action_print_all:
-                new CheckRequiredItems(false, true).execute();
+            case R.id.action_print_all_barcode:
+                if(MainLibrary.CheckBluetooth())
+                    //new TaskPrintData(true).execute();
+                    new CheckRequiredItems(false, true, true).execute();
+                else
+                    Toast.makeText(AssortmentActivity.this, "Please enable yur bluetooth to proceed.", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_print_withso:
-                //lprintwithso = true;
-                //new TaskPrintData().execute(); // PRINT DATA
-                new CheckRequiredItems(false, false).execute();
+            case R.id.action_print_all_nobarcode:
+                if(MainLibrary.CheckBluetooth())
+                    //new TaskPrintData(false).execute();
+                    new CheckRequiredItems(false, true, false).execute();
+                else
+                    Toast.makeText(AssortmentActivity.this, "Please enable yur bluetooth to proceed.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.action_print_withso_barcode:
+                if(MainLibrary.CheckBluetooth()) {
+                    //lprintwithso = true;
+                    //new TaskPrintData().execute(); // PRINT DATA
+                    new CheckRequiredItems(false, false, true).execute();
+                }
+                else
+                    Toast.makeText(AssortmentActivity.this, "Please enable yur bluetooth to proceed.", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.action_print_withso_nobarcode:
+                if(MainLibrary.CheckBluetooth()) {
+                    //lprintwithso = true;
+                    //new TaskPrintData().execute(); // PRINT DATA
+                    new CheckRequiredItems(false, false, false).execute();
+                }
+                else
+                    Toast.makeText(AssortmentActivity.this, "Please enable yur bluetooth to proceed.", Toast.LENGTH_SHORT).show();
                 break;
             case android.R.id.home:
                 finish();
@@ -643,14 +939,16 @@ public class AssortmentActivity extends AppCompatActivity {
         int nAllItems;
         boolean bPostMode = false;
         boolean bPrintAll = false;
+        boolean bHasBarcode = false;
 
         public CheckRequiredItems(boolean isPostMode) {
             this.bPostMode = isPostMode;
         }
 
-        public CheckRequiredItems(boolean isPostMode, boolean isPrintAll) {
+        public CheckRequiredItems(boolean isPostMode, boolean isPrintAll, boolean hasBarcode) {
             this.bPostMode = isPostMode;
             this.bPrintAll = isPrintAll;
+            this.bHasBarcode = hasBarcode;
         }
 
         @Override
@@ -691,13 +989,18 @@ public class AssortmentActivity extends AppCompatActivity {
 
             // FOR POSTING
             Intent intentpost = new Intent(AssortmentActivity.this, CaptureSignatureActivity.class);
-            intentpost.putExtra("location", MainLibrary.gCurrentBranchSelected);
+            intentpost.putExtra("location", MainLibrary.gSelectedLocation.locationCode);
             intentpost.putExtra("datepick", MainLibrary.gStrCurrentDate);
 
             // FOR PRINTING
             mAlertDialog = new AlertDialog.Builder(AssortmentActivity.this).create();
             mAlertDialog.setTitle("Print all items");
-            mAlertDialog.setMessage("Do you want to print all items?");
+
+            if(bHasBarcode)
+                mAlertDialog.setMessage("Do you want to print all items with barcode ?");
+            else
+                mAlertDialog.setMessage("Do you want to print all items without barcode ?");
+
             mAlertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -709,7 +1012,7 @@ public class AssortmentActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     mAlertDialog.dismiss();
                     lprintall = true;
-                    new TaskPrintData().execute();
+                    new TaskPrintData(bHasBarcode).execute();
                 }
             });
 
@@ -718,18 +1021,21 @@ public class AssortmentActivity extends AppCompatActivity {
                 if (bPrintAll) mAlertDialog.show();
                 else {
                     lprintwithso = true;
-                    new TaskPrintData().execute(); // PRINT DATA
+                    new TaskPrintData(bHasBarcode).execute(); // PRINT DATA
                 }
             }
         }
     }
 
-    private String PrintFormat() {
+    private String PrintFormat(boolean hasBarcode) {
 
         String toPrint = "";
 
+        numItems = 0;
+        len = 0;
+
         toPrint += "\n";
-        toPrint += "Store: " + MainLibrary.gCurrentBranchNameSelected + "\n";
+        toPrint += "Store: " + MainLibrary.gSelectedLocation.locationName + "\n";
         toPrint += "Date: " + MainLibrary.gStrCurrentDate +"\n" + "\n" ;
         toPrint += StringUtils.rightPad("SKU",45,"") +
                 StringUtils.rightPad("IG",14,"") +
@@ -738,9 +1044,11 @@ public class AssortmentActivity extends AppCompatActivity {
                 StringUtils.rightPad("Order amt", 14, "") + "\n";
         toPrint += Printer.tsclines;
 
+        len += 1.5;
+
         int totsku = 0, totfso = 0;
         double totfsoval = 0;
-        len = 0;
+
 
         for (Assortment assortment : arrAssortmentAll) {
 
@@ -757,8 +1065,19 @@ public class AssortmentActivity extends AppCompatActivity {
             int lenfso = 12 - String.valueOf(assortment.fso).length(); // 18
             int lenfsoval = 12 - String.valueOf(assortment.fsovalue * assortment.fso).length(); // 18
 
-            toPrint += StringUtils.rightPad(assortment.desc, 20, "") + "\n"
-                    + "BARCODE ;\"128\",50,2,0,2,2,\"" + assortment.barcode + "\"" + "\n"
+            String barcodeType = MainLibrary.GetBarcodeType(assortment.itembarcode);
+            String barcodeCmd = "";
+            String endlines = "";
+            if(hasBarcode) {
+                barcodeCmd = "BARCODE ;\"" + barcodeType + "\",50,2,0,2,2,\"" + assortment.itembarcode + "\"" + "\n";
+            }
+            else {
+                endlines += "\n";
+            }
+
+            toPrint += StringUtils.rightPad(assortment.desc + " " + assortment.barcode, 20, "") + "\n"
+                    + barcodeCmd
+                    + endlines
                     + "\nINFO ;"
                     + StringUtils.rightPad(" ", 47,"")
                     + StringUtils.rightPad(String.valueOf(assortment.ig), lenig)
@@ -768,15 +1087,17 @@ public class AssortmentActivity extends AppCompatActivity {
                     + StringUtils.rightPad(String.format("%.2f", assortment.fsovalue * assortment.fso), lenfsoval, "")
                     + "*"
                     + StringUtils.rightPad("       ", lensku,"")
-                    + "\n\n";
+                    + "\n";
 
             if (assortment.so > 0) {
                 totsku = totsku + 1;
             }
 
+            numItems++;
+            len += 0.70;
+
             totfso = totfso + assortment.fso;
             totfsoval = totfsoval + (assortment.fsovalue * assortment.fso) ;
-            len = len + 2;
         }
 
         toPrint += Printer.tsclines;
@@ -795,6 +1116,8 @@ public class AssortmentActivity extends AppCompatActivity {
         lprintall = false;
         lprintwithso = false;
 
+        len += 1.60;
+
         return toPrint;
     }
 
@@ -808,9 +1131,7 @@ public class AssortmentActivity extends AppCompatActivity {
         TextView lvCaption = (TextView) dialog.findViewById(R.id.textViewBranchName);
 
         if (filterCode > 3) {
-
             mAssortmentAdapter.filter(filterCode, "xxx");
-
         } else {
 
             final String filterId, filterTitle;
@@ -926,7 +1247,7 @@ public class AssortmentActivity extends AppCompatActivity {
 
         ArrayList<ReportClass> arrayListReport = new ArrayList<>();
 
-        cursorGroup = db.queryData("select " + filterId + " as name from " + SQLiteHelper.TABLE_ASSORTMENT + " where storeid = " + String.valueOf(MainLibrary.gCurrentBranchSelected) +
+        cursorGroup = db.queryData("select " + filterId + " as name from " + SQLiteHelper.TABLE_ASSORTMENT + " where storeid = " + String.valueOf(MainLibrary.gSelectedLocation.locationCode) +
                 " group by " + filterId);
 
 
@@ -1045,5 +1366,83 @@ public class AssortmentActivity extends AppCompatActivity {
 
         dialog.show();
 
+    }
+
+    public class UserLogout extends AsyncTask<Void, Void, Boolean> {
+
+        String response;
+        String errmsg;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDL = ProgressDialog.show(AssortmentActivity.this, "", "Logging out. Please Wait...", true);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            boolean bReturn = false;
+
+            try{
+
+                String urlfinal = MainLibrary.API_URL + "/api/logout?email=" + MainLibrary.gStrCurrentUserName + "&device_id=" + MainLibrary.gStrDeviceId;
+
+                URL url = new URL(urlfinal);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.connect();
+                try{
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    urlConnection.disconnect();
+                    response = stringBuilder.toString();
+                    bReturn = true;
+                }
+                catch (MalformedURLException mex) {
+                    mex.printStackTrace();
+                    Log.e("MalformedURLException", mex.getMessage());
+                    errmsg += "\n" + mex.getMessage();
+                }
+
+            } catch(Exception e){
+                e.printStackTrace();
+                Log.e("Exception", e.getMessage(), e);
+                errmsg += "\n" + e.getMessage();
+            }
+            return bReturn;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            pDL.dismiss();
+            Intent intentMain = new Intent(AssortmentActivity.this, MainActivity.class);
+            if(!success) {
+                //Toast.makeText(AssortmentActivity.this, errmsg, Toast.LENGTH_LONG).show();
+                startActivity(intentMain);
+                return;
+            }
+
+            try {
+
+                JSONObject data = new JSONObject(response);
+                String msg = data.getString("msg");
+
+                MainLibrary.gStrCurrentUserID = 0;
+                MainLibrary.gStrCurrentUserName = "";
+
+                Toast.makeText(AssortmentActivity.this, msg, Toast.LENGTH_SHORT).show();
+                startActivity(intentMain);
+                finish();
+            }
+            catch (JSONException jex) {
+                jex.printStackTrace();
+                Log.e("JSONException", jex.getMessage());
+            }
+
+        }
     }
 }

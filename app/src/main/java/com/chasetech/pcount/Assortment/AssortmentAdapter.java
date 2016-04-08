@@ -9,8 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chasetech.pcount.R;
-import com.chasetech.pcount.library.PCount;
-import com.chasetech.pcount.viewholder.PCountViewHolder;
 
 import java.util.ArrayList;
 import java.util.Locale;

@@ -80,19 +80,19 @@ public class AutoUpdateApk extends Observable {
 		setupVariables(ctx);
 	}
 
-	// set icon for notification popup (default = application icon)
+	// set icon for notification popup (ic_default = application icon)
 	//
 	public static void setIcon( int icon ) {
 		appIcon = icon;
 	}
 
-	// set name to display in notification popup (default = application label)
+	// set name to display in notification popup (ic_default = application label)
 	//
 	public static void setName( String name ) {
 		appName = name;
 	}
 
-	// set Notification flags (default = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_NO_CLEAR)
+	// set Notification flags (ic_default = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_NO_CLEAR)
 	//
 	public static void setNotificationFlags( int flags ) {
 		NOTIFICATION_FLAGS = flags;
@@ -114,7 +114,7 @@ public class AutoUpdateApk extends Observable {
 		}
 	}
 
-	// software updates will use WiFi/Ethernet only (default mode)
+	// software updates will use WiFi/Ethernet only (ic_default mode)
 	//
 	public static void disableMobileUpdates() {
 		mobile_updates = false;
@@ -287,10 +287,10 @@ public class AutoUpdateApk extends Observable {
 
 			HttpParams httpParameters = new BasicHttpParams();
 			// set the timeout in milliseconds until a connection is established
-			// the default value is zero, that means the timeout is not used 
+			// the ic_default value is zero, that means the timeout is not used
 			int timeoutConnection = 3000;
 			HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
-			// set the default socket timeout (SO_TIMEOUT) in milliseconds
+			// set the ic_default socket timeout (SO_TIMEOUT) in milliseconds
 			// which is the timeout for waiting for data
 			int timeoutSocket = 5000;
 			HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);

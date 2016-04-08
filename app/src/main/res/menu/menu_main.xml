@@ -52,10 +52,14 @@
         android:title="@string/action_print"
         android:orderInCategory="100">
         <menu>
-            <item android:title="With SO"
-                android:id="@+id/action_print_withso" />
-            <item android:title="All"
-                android:id="@+id/action_print_all" />
+            <item android:title="With SO with barcode"
+                android:id="@+id/action_print_withso_barcode" />
+            <item android:title="With SO without barcode"
+                android:id="@+id/action_print_withso_nobarcode" />
+            <item android:title="All with barcode"
+                android:id="@+id/action_print_all_barcode" />
+            <item android:title="All without barcode"
+                android:id="@+id/action_print_all_nobarcode" />
         </menu>
     </item>
     <item android:id="@+id/action_logout"
